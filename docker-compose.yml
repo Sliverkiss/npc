@@ -24,13 +24,29 @@ services:
     image: codercom/code-server:latest
     container_name: code-server
     restart: always
-    ports:
-      - "10873:8080"
     volumes:
       - ./app:/home/coder/project
     environment:
       PASSWORD: "12345678"
     user: "501:20"
     working_dir: /home/coder/project
+    networks:
+      - appnet
 
-networks: {}
+  caddy:
+    image: caddy:latest
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./caddy/data:/data
+      - ./caddy/config:/config
+    networks:
+      - appnet
+
+networks:
+  appnet:
+    driver: bridge
