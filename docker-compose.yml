@@ -7,7 +7,7 @@ services:
     container_name: npc
     restart: always
     init: true
-    network_mode: host  # 使用宿主机网络
+    network_mode: host
     volumes:
       - ./app:/app
     environment:
@@ -19,5 +19,18 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
+
+  code-server:
+    image: codercom/code-server:latest
+    container_name: code-server
+    restart: always
+    ports:
+      - "10873:8080"
+    volumes:
+      - ./app:/home/coder/project
+    environment:
+      PASSWORD: "12345678"
+    user: "501:20"
+    working_dir: /home/coder/project
 
 networks: {}
