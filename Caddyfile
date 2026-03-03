@@ -1,3 +1,15 @@
-code.sliverkiss.local {
+# 全局设置：本地使用，不申请 HTTPS 证书
+{
+    auto_https off
+}
+
+# VS Code Web - 管理脚本文件
+http://code.sliverkiss.lan {
     reverse_proxy code-server:8080
+}
+
+# 文件浏览 - 允许别人查看文件内容
+http://files.sliverkiss.lan {
+    root * /srv/files
+    file_server browse
 }
