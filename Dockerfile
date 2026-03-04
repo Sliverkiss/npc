@@ -25,6 +25,13 @@ RUN set -eux; \
     mv "/usr/lib/code-server-${CODE_SERVER_VERSION}-linux-${CODE_SERVER_ARCH}" /usr/lib/code-server; \
     ln -sf /usr/lib/code-server/bin/code-server /usr/local/bin/code-server; \
     ln -sf /usr/lib/code-server/lib/node /usr/local/bin/node; \
+    if [ -f /usr/lib/code-server/lib/node_modules/npm/bin/npm-cli.js ]; then \
+        printf '%s\n' '#!/bin/sh' 'exec /usr/local/bin/node /usr/lib/code-server/lib/node_modules/npm/bin/npm-cli.js "$@"' > /usr/local/bin/npm; \
+        printf '%s\n' '#!/bin/sh' 'exec /usr/local/bin/node /usr/lib/code-server/lib/node_modules/npm/bin/npx-cli.js "$@"' > /usr/local/bin/npx; \
+        chmod +x /usr/local/bin/npm /usr/local/bin/npx; \
+    else \
+        apt-get install -y --no-install-recommends npm; \
+    fi; \
     ln -sf /usr/bin/python3 /usr/local/bin/python; \
     ln -sf /usr/bin/pip3 /usr/local/bin/pip; \
     rm -f "/tmp/${CODE_SERVER_TARBALL}"; \
