@@ -1,4 +1,7 @@
-npc:
+version: "3.9"
+
+services:
+  npc:
     build:
       context: .
       dockerfile: Dockerfile
