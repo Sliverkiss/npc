@@ -3,15 +3,17 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: npc:1.0.1
+    image: npc:1.0.2
     container_name: npc
     restart: always
     init: true
-    network_mode: host
+    ports:
+      - "8080:8080"
     volumes:
       - ./app:/app
     environment:
       TZ: Asia/Shanghai
+      CODE_SERVER_PASSWORD: "password"
     tty: true
     healthcheck:
       test: ["CMD-SHELL", "pgrep crond || exit 1"]
@@ -19,17 +21,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
-
-  code-server:
-    image: codercom/code-server:latest
-    container_name: code-server
-    restart: always
-    volumes:
-      - ./app:/home/coder/project
-    environment:
-      PASSWORD: "12345678"
-    user: "501:20"
-    working_dir: /home/coder/project
     networks:
       - appnet
 
