@@ -1,5 +1,4 @@
-services:
-  npc:
+npc:
     build:
       context: .
       dockerfile: Dockerfile
@@ -14,30 +13,3 @@ services:
     environment:
       TZ: Asia/Shanghai
       CODE_SERVER_PASSWORD: "password"
-    tty: true
-    healthcheck:
-      test: ["CMD-SHELL", "pgrep crond || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
-    networks:
-      - appnet
-
-  caddy:
-    image: caddy:latest
-    container_name: caddy
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - ./caddy/data:/data
-      - ./caddy/config:/config
-    networks:
-      - appnet
-
-networks:
-  appnet:
-    driver: bridge
