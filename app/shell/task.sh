@@ -65,3 +65,9 @@ case "$extension" in
     exit 1
     ;;
 esac
+
+if [ -f /app/config/cron.list ]; then
+    crontab /app/config/cron.list
+else
+    echo "未找到 /app/config/cron.list，跳过安装 crontab"
+fi
