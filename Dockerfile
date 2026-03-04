@@ -3,6 +3,9 @@ FROM debian:bookworm-slim
 ARG CODE_SERVER_VERSION=4.109.2
 ARG TARGETARCH
 
+ENV VIRTUAL_ENV=/opt/venv
+ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
+
 RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
@@ -13,6 +16,7 @@ RUN set -eux; \
         git \
         wget \
         python3 \
+        python3-venv \
         python3-pip; \
     CODE_SERVER_ARCH="${TARGETARCH:-$(dpkg --print-architecture)}"; \
     case "${CODE_SERVER_ARCH}" in \
@@ -32,8 +36,12 @@ RUN set -eux; \
     else \
         apt-get install -y --no-install-recommends npm; \
     fi; \
-    ln -sf /usr/bin/python3 /usr/local/bin/python; \
-    ln -sf /usr/bin/pip3 /usr/local/bin/pip; \
+    python3 -m venv "${VIRTUAL_ENV}"; \
+    "${VIRTUAL_ENV}/bin/pip" install --no-cache-dir --upgrade pip; \
+    ln -sf "${VIRTUAL_ENV}/bin/python" /usr/local/bin/python; \
+    ln -sf "${VIRTUAL_ENV}/bin/python3" /usr/local/bin/python3; \
+    ln -sf "${VIRTUAL_ENV}/bin/pip" /usr/local/bin/pip; \
+    ln -sf "${VIRTUAL_ENV}/bin/pip3" /usr/local/bin/pip3; \
     rm -f "/tmp/${CODE_SERVER_TARBALL}"; \
     rm -rf /var/lib/apt/lists/*
 
