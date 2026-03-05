@@ -1,10 +1,13 @@
-<h1 align="center">Npc</h1>
-<h3>Node Python Container</h4>
-
+<p align="center">
+  <img src="https://github.com/Sliverkiss/npc/raw/main/IMG_7241.png" width="200">
+</p>
+<div align=center>
+  <h3>Node Python Container</h4>  
 <a href="https://github.com/Sliverkiss/npc/stargazers"><img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/Sliverkiss/npc?color=yellow&logo=riseup&logoColor=yellow&style=flat-square"></a>
 <a href="https://github.com/Sliverkiss/npc/network/members"><img alt="GitHub forks" src="https://img.shields.io/github/forks/Sliverkiss/npc?color=orange&style=flat-square"></a>
 <a href="https://github.com/Sliverkiss/npc/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/Sliverkiss/npc?color=red&style=flat-square"></a>
 <a href="https://t.me/sliverkiss_blog"><img alt="Telegram" src="https://img.shields.io/badge/chat-telegram-blue.svg?logo=telegram&style=flat-square"/></a> 
+</div>
 
 ## 简介
 
