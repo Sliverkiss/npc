@@ -1,1 +1,8 @@
-35 5 * * * /app/shell/clean.sh 3
+# =========================
+# shell tasks
+# =========================
+
+# 清理日志
+35 5 * * * /app/shell/clean.sh
+# 更新脚本
+10 4 * * * /app/shell/repo_update.sh
