@@ -28,9 +28,10 @@ npm install
 ```shell
 chmod +x /app/shell/task.sh
 ln -sf /app/shell/task.sh /usr/local/bin/task
-``
+```
 
- ## 免责声明
+
+## 免责声明
 * 项目内所涉及脚本、LOGO 仅为资源共享、学习参考之目的，不保证其合法性、正当性、准确性；切勿使用项目做任何商业用途或牟利；
 
 * 遵循避风港原则，若有图片和内容侵权，请在 Issues 告知，核实后删除，其版权均归原作者及其网站所有；
