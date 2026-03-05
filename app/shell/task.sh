@@ -68,6 +68,7 @@ esac
 
 if [ -f /app/config/cron.list ]; then
     crontab /app/config/cron.list
+    echo "⏰ 刷新crontab定时任务列表成功！"
 else
     echo "未找到 /app/config/cron.list，跳过安装 crontab"
 fi
