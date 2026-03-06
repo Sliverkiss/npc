@@ -4,8 +4,103 @@
 [ -f /app/config/env.sh ] && source /app/config/env.sh
 
 if [ -z "$1" ]; then
-    echo "请输入要执行的脚本路径，例如：task ./demo.py"
+    echo "❗ 请输入要执行的脚本路径，例如："
+    echo "   task ./demo.py"
     exit 1
+fi
+
+# ===============================
+# task status
+# ===============================
+if [ "$1" = "status" ]; then
+    count=$(ps -eo cmd | grep "/app/run/" | grep -E "node|python" | grep -v grep | wc -l)
+
+    echo "📊 Task 状态"
+    echo "----------------------------------"
+    printf "%-20s %s\n" "运行脚本数量" "$count"
+    echo "----------------------------------"
+    exit 0
+fi
+
+
+# ===============================
+# task stopall
+# ===============================
+if [ "$1" = "stopall" ]; then
+    echo "🛑 正在停止所有运行中的脚本..."
+    echo "----------------------------------"
+
+    pids=$(grep -l "/app/run/" /proc/*/cmdline 2>/dev/null | awk -F'/' '{print $3}')
+
+    if [ -z "$pids" ]; then
+        echo "✔ 没有正在运行的脚本"
+        exit 0
+    fi
+
+    for pid in $pids; do
+        printf "%-10s %s\n" "停止PID" "$pid"
+        kill "$pid" 2>/dev/null
+    done
+
+    echo "----------------------------------"
+    echo "✅ 全部脚本已停止"
+    exit 0
+fi
+
+
+# ===============================
+# task top
+# ===============================
+if [ "$1" = "top" ]; then
+
+while true
+do
+    clear
+
+    echo "📊 Task 实时监控  $(date '+%Y-%m-%d %H:%M:%S')"
+    echo "按 Ctrl+C 退出"
+    echo "---------------------------------------------------------------------"
+    printf "%-8s %-12s %-s\n" "PID" "运行时间" "脚本"
+    echo "---------------------------------------------------------------------"
+
+    for pid in /proc/[0-9]*; do
+        pid=${pid#/proc/}
+
+        cmdline="/proc/$pid/cmdline"
+
+        if [ -f "$cmdline" ]; then
+            cmd=$(tr '\0' ' ' < "$cmdline")
+
+            if echo "$cmd" | grep -q "/app/run/"; then
+
+                start=$(stat -c %Y /proc/$pid 2>/dev/null)
+                now=$(date +%s)
+
+                runtime=$((now - start))
+
+                # 时间格式化
+                h=$((runtime/3600))
+                m=$((runtime%3600/60))
+                s=$((runtime%60))
+
+                if [ $h -gt 0 ]; then
+                    runtime="${h}h${m}m${s}s"
+                elif [ $m -gt 0 ]; then
+                    runtime="${m}m${s}s"
+                else
+                    runtime="${s}s"
+                fi
+
+                printf "%-8s %-12s %-s\n" "$pid" "$runtime" "$cmd"
+            fi
+        fi
+    done
+
+    echo "---------------------------------------------------------------------"
+
+    sleep 1
+done
+
 fi
 
 original_script="$1"
@@ -67,8 +162,8 @@ case "$extension" in
 esac
 
 if [ -f /app/config/cron.list ]; then
+    echo "⏰ 刷新cron定时任务列表成功！"
     crontab /app/config/cron.list
-    echo "⏰ 刷新crontab定时任务列表成功！"
 else
     echo "未找到 /app/config/cron.list，跳过安装 crontab"
 fi
