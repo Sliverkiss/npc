@@ -15,6 +15,11 @@ mkdir -p \
     "${SHELL_DIR}" \
     /var/log/cron
 
+# 修复权限（确保挂载目录可写）
+if [ -n "${PUID:-}" ] && [ -n "${PGID:-}" ]; then
+    chown -R "${PUID}:${PGID}" "${APP_DIR}"
+fi
+
 # 初始化配置文件
 [ ! -f "${CONFIG_DIR}/cron.list" ] && touch "${CONFIG_DIR}/cron.list"
 
