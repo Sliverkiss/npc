@@ -7,6 +7,7 @@ services:
     container_name: npc
     restart: always
     init: true
+    network_mode: host
     volumes:
       - ./app:/app
     environment:
@@ -18,30 +19,18 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
-    networks:
-      - npc-net
 
   code-server:
     image: codercom/code-server:latest
     container_name: code-server
     restart: always
+    ports:
+      - "10873:8080"
     volumes:
       - ./app:/home/coder/project
     environment:
       PASSWORD: "12345678"
     user: "501:20"
     working_dir: /home/coder/project
-    networks:
-      - npc-net
 
-  cloudflared:
-    image: cloudflare/cloudflared:latest
-    container_name: cloudflared
-    restart: always
-    command: tunnel --no-autoupdate run --token 你的token
-    networks:
-      - npc-net
-
-networks:
-  npc-net:
-    driver: bridge
+networks: {}
