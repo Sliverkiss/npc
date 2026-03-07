@@ -3,69 +3,43 @@ set -e
 
 echo "Container initialization started..."
 
-# 创建所有必要的目录
-mkdir -p /app/scripts /app/config /app/shell /var/log/cron
-mkdir -p /root/.config/code-server
+APP_DIR="/app"
+CONFIG_DIR="${APP_DIR}/config"
+SHELL_DIR="${APP_DIR}/shell"
 
-# 初始化 /app：将镜像内模板补齐到挂载目录（不覆盖已有文件）
-if [ -d /opt/app-template ]; then
-    cp -an /opt/app-template/. /app/
-fi
+# 创建必要目录
+mkdir -p \
+    "${APP_DIR}/scripts" \
+    "${CONFIG_DIR}" \
+    "${SHELL_DIR}" \
+    /var/log/cron
 
-[ ! -f /app/config/env.sh ] && touch /app/config/env.sh
-[ ! -f /app/config/cron.list ] && touch /app/config/cron.list
+# 初始化配置文件
+[ ! -f "${CONFIG_DIR}/cron.list" ] && touch "${CONFIG_DIR}/cron.list"
 
-CODE_SERVER_CONFIG_FILE="/root/.config/code-server/config.yaml"
+# 创建命令软链接函数
+link_cmd() {
+    name="$1"
+    file="${SHELL_DIR}/${name}.sh"
 
-# 初始化 code-server 配置文件
-if [ ! -f "${CODE_SERVER_CONFIG_FILE}" ]; then
-    cat > "${CODE_SERVER_CONFIG_FILE}" <<EOF
-bind-addr: 127.0.0.1:8080
-auth: password
-cert: false
-EOF
-fi
-
-escape_sed_replacement() {
-    printf '%s' "$1" | sed 's/[\/&]/\\&/g'
-}
-
-set_yaml_key() {
-    key="$1"
-    value="$2"
-    escaped_value="$(escape_sed_replacement "${value}")"
-    if grep -q "^${key}:" "${CODE_SERVER_CONFIG_FILE}"; then
-        sed -i "s/^${key}:.*/${key}: ${escaped_value}/" "${CODE_SERVER_CONFIG_FILE}"
-    else
-        printf '%s: %s\n' "${key}" "${value}" >> "${CODE_SERVER_CONFIG_FILE}"
+    if [ -f "${file}" ]; then
+        chmod +x "${file}"
+        ln -sf "${file}" "/usr/local/bin/${name}"
+        echo "Linked command: ${name}"
     fi
 }
 
-# 支持通过 CODE_SERVER_PASSWORD 自定义 code-server 密码
-if [ -n "${CODE_SERVER_PASSWORD:-}" ]; then
-    set_yaml_key "auth" "password"
-    set_yaml_key "password" "${CODE_SERVER_PASSWORD}"
-    set_yaml_key "cert" "false"
-    echo "code-server password configured from environment variable."
-fi
+# 自动注册 shell 命令
+link_cmd task
+link_cmd clean
 
-# 判断 /app/shell/task.sh 是否存在，如果存在，则设置可执行权限并创建软链接到 /usr/local/bin/task
-if [ -f /app/shell/task.sh ]; then
-    chmod +x /app/shell/task.sh
-    ln -sf /app/shell/task.sh /usr/local/bin/task
-fi
+echo "Initialization complete."
 
-if [ -f /app/shell/clean.sh ]; then
-    chmod +x /app/shell/clean.sh
-    ln -sf /app/shell/clean.sh /usr/local/bin/clean
-fi
-
-echo "Initialization complete. Starting cron daemon..."
-if ! command -v cron > /dev/null 2>&1; then
-    echo "cron daemon not found."
+# 启动 cron
+if ! command -v crond >/dev/null 2>&1; then
+    echo "Error: crond not found"
     exit 1
 fi
-cron
 
-echo "Starting code-server..."
-exec code-server --bind-addr 0.0.0.0:8080 /app
+echo "Starting cron daemon..."
+exec crond -f -l 4
