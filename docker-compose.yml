@@ -3,14 +3,45 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: npc:1.0.2
+    image: npc:1.0.1
     container_name: npc
     restart: always
     init: true
-    ports:
-      - "8080:8080"
     volumes:
       - ./app:/app
     environment:
       TZ: Asia/Shanghai
-      CODE_SERVER_PASSWORD: "password"
+    tty: true
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep crond || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - npc-net
+
+  code-server:
+    image: codercom/code-server:latest
+    container_name: code-server
+    restart: always
+    volumes:
+      - ./app:/home/coder/project
+    environment:
+      PASSWORD: "12345678"
+    user: "501:20"
+    working_dir: /home/coder/project
+    networks:
+      - npc-net
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: always
+    command: tunnel --no-autoupdate run --token eyJhIjoiM2FlOTEyNDg3NDlmZDg0OGYzMjk5YmUxMGViOGMxNjMiLCJ0IjoiZDU1MTc5OGUtNTUzMi00OGRmLTkxYzAtMDE4ZDA5Y2MzNzcwIiwicyI6Ik1EWXlNR1EyTXpFdFkyUTNNQzAwWTJSa0xXRTBPRGN0TldKaU9UWXhOREExWm1SbCJ9
+    networks:
+      - npc-net
+
+networks:
+  npc-net:
+    driver: bridge
