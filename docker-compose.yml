@@ -38,7 +38,7 @@ services:
     image: cloudflare/cloudflared:latest
     container_name: cloudflared
     restart: always
-    command: tunnel --no-autoupdate run --token eyJhIjoiM2FlOTEyNDg3NDlmZDg0OGYzMjk5YmUxMGViOGMxNjMiLCJ0IjoiZDU1MTc5OGUtNTUzMi00OGRmLTkxYzAtMDE4ZDA5Y2MzNzcwIiwicyI6Ik1EWXlNR1EyTXpFdFkyUTNNQzAwWTJSa0xXRTBPRGN0TldKaU9UWXhOREExWm1SbCJ9
+    command: tunnel --no-autoupdate run --token 你的token
     networks:
       - npc-net
 
