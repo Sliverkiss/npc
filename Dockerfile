@@ -1,53 +1,35 @@
-FROM debian:bookworm-slim
+FROM python:3.11.8-alpine AS python-builder
 
-ARG CODE_SERVER_VERSION=4.109.2
-ARG TARGETARCH
+RUN python -m pip install --upgrade --no-cache-dir pip setuptools wheel
 
-ENV VIRTUAL_ENV=/opt/venv
-ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
+FROM node:21.7.3-alpine AS node-builder
 
-RUN set -eux; \
-    apt-get update; \
-    apt-get install -y --no-install-recommends \
+FROM alpine:3.19
+
+COPY --from=python-builder /usr/local /usr/local
+
+COPY --from=node-builder /usr/local /usr/local
+
+RUN apk add --no-cache \
         bash \
-        cron \
+        dcron \
         tzdata \
+        libstdc++ \
         ca-certificates \
+        libffi \
+        openssl \
+        readline \
+        zlib \
+        expat \
+        bzip2 \
+        sqlite-libs \
         git \
         wget \
-        python3 \
-        python3-venv \
-        python3-pip; \
-    CODE_SERVER_ARCH="${TARGETARCH:-$(dpkg --print-architecture)}"; \
-    case "${CODE_SERVER_ARCH}" in \
-        amd64|arm64) ;; \
-        *) echo "Unsupported architecture: ${CODE_SERVER_ARCH}" >&2; exit 1 ;; \
-    esac; \
-    CODE_SERVER_TARBALL="code-server-${CODE_SERVER_VERSION}-linux-${CODE_SERVER_ARCH}.tar.gz"; \
-    wget -O "/tmp/${CODE_SERVER_TARBALL}" "https://github.com/coder/code-server/releases/download/v${CODE_SERVER_VERSION}/${CODE_SERVER_TARBALL}"; \
-    tar -xzf "/tmp/${CODE_SERVER_TARBALL}" -C /usr/lib; \
-    mv "/usr/lib/code-server-${CODE_SERVER_VERSION}-linux-${CODE_SERVER_ARCH}" /usr/lib/code-server; \
-    ln -sf /usr/lib/code-server/bin/code-server /usr/local/bin/code-server; \
-    ln -sf /usr/lib/code-server/lib/node /usr/local/bin/node; \
-    if [ -f /usr/lib/code-server/lib/node_modules/npm/bin/npm-cli.js ]; then \
-        printf '%s\n' '#!/bin/sh' 'exec /usr/local/bin/node /usr/lib/code-server/lib/node_modules/npm/bin/npm-cli.js "$@"' > /usr/local/bin/npm; \
-        printf '%s\n' '#!/bin/sh' 'exec /usr/local/bin/node /usr/lib/code-server/lib/node_modules/npm/bin/npx-cli.js "$@"' > /usr/local/bin/npx; \
-        chmod +x /usr/local/bin/npm /usr/local/bin/npx; \
-    else \
-        apt-get install -y --no-install-recommends npm; \
-    fi; \
-    python3 -m venv "${VIRTUAL_ENV}"; \
-    "${VIRTUAL_ENV}/bin/pip" install --no-cache-dir --upgrade pip; \
-    ln -sf "${VIRTUAL_ENV}/bin/python" /usr/local/bin/python; \
-    ln -sf "${VIRTUAL_ENV}/bin/python3" /usr/local/bin/python3; \
-    ln -sf "${VIRTUAL_ENV}/bin/pip" /usr/local/bin/pip; \
-    ln -sf "${VIRTUAL_ENV}/bin/pip3" /usr/local/bin/pip3; \
-    rm -f "/tmp/${CODE_SERVER_TARBALL}"; \
-    rm -rf /var/lib/apt/lists/*
+    && ln -sf /usr/local/bin/python3 /usr/local/bin/python \
+    && ln -sf /usr/local/bin/pip3 /usr/local/bin/pip \
+    && rm -rf /var/cache/apk/*
 
 WORKDIR /app
-
-COPY app/ /opt/app-template/
 
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
