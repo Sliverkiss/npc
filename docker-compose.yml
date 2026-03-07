@@ -30,7 +30,6 @@ services:
       - ./app:/home/coder/project
     environment:
       PASSWORD: "12345678"
-    user: "501:20"
     working_dir: /home/coder/project
 
 networks: {}
