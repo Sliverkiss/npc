@@ -1,10 +1,9 @@
-FROM python:3.11.8-alpine AS python-builder
-
+FROM python:3.13.12-alpine AS python-builder
 RUN python -m pip install --upgrade --no-cache-dir pip setuptools wheel
 
-FROM node:21.7.3-alpine AS node-builder
+FROM node:22.22-alpine AS node-builder
 
-FROM alpine:3.19
+FROM alpine:3.22
 
 COPY --from=python-builder /usr/local /usr/local
 
@@ -25,6 +24,7 @@ RUN apk add --no-cache \
         sqlite-libs \
         git \
         wget \
+        curl \
     && ln -sf /usr/local/bin/python3 /usr/local/bin/python \
     && ln -sf /usr/local/bin/pip3 /usr/local/bin/pip \
     && rm -rf /var/cache/apk/*
